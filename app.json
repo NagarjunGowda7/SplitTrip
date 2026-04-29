@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "SplitTrip",
+    "slug": "splittrip",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "splittrip",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4EFE6"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.splittrip.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.splittrip.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#F4EFE6"
+      }
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-document-picker",
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "firebaseApiKey": "",
+      "firebaseAuthDomain": "",
+      "firebaseProjectId": "",
+      "firebaseStorageBucket": "",
+      "firebaseMessagingSenderId": "",
+      "firebaseAppId": "",
+      "eas": {
+        "projectId": "d7cd576a-8f47-4efe-b722-0979d85c7477"
+      }
+    },
+    "owner": "arjuns77-org"
+  }
+}
