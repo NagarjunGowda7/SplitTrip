@@ -30,7 +30,10 @@
       }
     },
     "web": {
-      "favicon": "./assets/icon.png"
+      "favicon": "./assets/icon.png",
+      "bundler": "metro",
+      "output": "static",
+      "basePath": "/SplitTrip/"
     },
     "plugins": [
       "expo-document-picker",
