@@ -32,8 +32,7 @@
     "web": {
       "favicon": "./assets/icon.png",
       "bundler": "metro",
-      "output": "static",
-      "basePath": "/SplitTrip/"
+      "basePath": "/SplitTrip"
     },
     "plugins": [
       "expo-document-picker",

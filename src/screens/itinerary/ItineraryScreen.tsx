@@ -9,7 +9,7 @@ import { FormMessage } from "@/components/FormMessage";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { useItinerary } from "@/hooks/useItinerary";
 import { useTrips } from "@/hooks/useTrips";
-import { compareItineraryOrder, formatItineraryTime } from "@/utils/dateHelpers";
+import { compareItineraryOrder, formatItineraryTime, formatShortDate } from "@/utils/dateHelpers";
 import { ParsedItineraryRow, parseItineraryWorkbookDetailed } from "@/utils/excelParser";
 
 export const ItineraryScreen = ({ navigation }: any) => {
@@ -102,7 +102,7 @@ export const ItineraryScreen = ({ navigation }: any) => {
                   Row {entry.sourceIndex + 2}: {entry.item.routeFrom} to {entry.item.routeTo}
                 </Text>
                 <Text className="mt-1 text-sm text-slate">
-                  {entry.item.date} | {formatItineraryTime(entry.item.startTime)} - {formatItineraryTime(entry.item.endTime)}
+                  {formatShortDate(entry.item.date)} | {formatItineraryTime(entry.item.startTime)} - {formatItineraryTime(entry.item.endTime)}
                 </Text>
                 <Text className="mt-1 text-sm text-slate">{entry.item.activity}</Text>
                 {entry.warnings.length ? (
@@ -146,7 +146,7 @@ export const ItineraryScreen = ({ navigation }: any) => {
               {item.routeFrom} to {item.routeTo}
             </Text>
             <Text className="text-sm text-slate">
-              {item.date} | {formatItineraryTime(item.startTime)} - {formatItineraryTime(item.endTime)}
+              {formatShortDate(item.date)} | {formatItineraryTime(item.startTime)} - {formatItineraryTime(item.endTime)}
             </Text>
             <Text className="text-sm text-slate">{item.activity}</Text>
             <Text className="text-sm text-slate">

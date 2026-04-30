@@ -20,9 +20,40 @@ const readString = (value: unknown) => (value == null ? "" : String(value).trim(
 
 const excelSerialToDate = (value: number) => new Date(Math.round((value - 25569) * 86400 * 1000));
 
+const parseDayMonthYearDate = (value: string) => {
+  const match = value.trim().match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2}|\d{4})$/);
+  if (!match) {
+    return "";
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const rawYear = match[3];
+  const year = Number(rawYear.length === 2 ? `20${rawYear}` : rawYear);
+  const date = new Date(year, month - 1, day, 12, 0, 0);
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return "";
+  }
+
+  return toLocalDateInputValue(date);
+};
+
+const dateToUtcInputValue = (value: Date) =>
+  `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}-${String(
+    value.getUTCDate(),
+  ).padStart(2, "0")}`;
+
 const formatImportedTime = (value: unknown) => {
   if (value instanceof Date) {
-    return formatItineraryTime(`${value.getHours()}:${String(value.getMinutes()).padStart(2, "0")}`);
+    return formatItineraryTime(
+      `${value.getUTCHours()}:${String(value.getUTCMinutes()).padStart(2, "0")}`,
+    );
   }
 
   if (typeof value === "number") {
@@ -52,7 +83,7 @@ const monthLookup: Record<string, number> = {
 
 const excelDateToIso = (value: unknown) => {
   if (value instanceof Date) {
-    return toLocalDateInputValue(value);
+    return dateToUtcInputValue(value);
   }
 
   if (typeof value === "number") {
@@ -69,6 +100,11 @@ const excelDateToIso = (value: unknown) => {
   }
 
   const raw = readString(value);
+  const dayMonthYearDate = parseDayMonthYearDate(raw);
+  if (dayMonthYearDate) {
+    return dayMonthYearDate;
+  }
+
   if (/^[A-Za-z]{3,}[-/\s]\d{1,2}$/.test(raw)) {
     return "";
   }
@@ -99,6 +135,30 @@ const resolveMonthDayDate = (
     isoDate: toLocalDateInputValue(date),
     year: nextYear,
     monthIndex,
+  };
+};
+
+const resolveImportedDate = (
+  value: unknown,
+  currentYear: number,
+  previousMonthIndex?: number,
+) => {
+  const rawDate = readString(value);
+  const monthDayDate = resolveMonthDayDate(rawDate, currentYear, previousMonthIndex);
+  if (monthDayDate) {
+    return monthDayDate;
+  }
+
+  const directDate = excelDateToIso(value);
+  if (!directDate) {
+    return null;
+  }
+
+  const parsed = new Date(`${directDate}T12:00:00`);
+  return {
+    isoDate: directDate,
+    year: parsed.getFullYear(),
+    monthIndex: parsed.getMonth(),
   };
 };
 
@@ -182,14 +242,12 @@ export const parseItineraryWorkbookDetailed = async (
 
   return rows
     .map((row, index) => {
-      const rawDate = readString(row["Date"]);
-      const directDate = excelDateToIso(row["Date"]);
-      const resolvedMonthDay = resolveMonthDayDate(rawDate, rollingYear, previousMonthIndex);
-      const finalDate = resolvedMonthDay?.isoDate ?? directDate;
+      const resolvedDate = resolveImportedDate(row["Date"], rollingYear, previousMonthIndex);
+      const finalDate = resolvedDate?.isoDate ?? "";
 
-      if (resolvedMonthDay) {
-        rollingYear = resolvedMonthDay.year;
-        previousMonthIndex = resolvedMonthDay.monthIndex;
+      if (resolvedDate) {
+        rollingYear = resolvedDate.year;
+        previousMonthIndex = resolvedDate.monthIndex;
       }
 
       return mapRowToItem(row, tripId, index, finalDate);
