@@ -1,41 +1,27 @@
-import { useEffect, useRef } from "react";
-import { Pressable, Text, View } from "react-native";
+import { useCallback, useEffect, useRef } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEventListener } from "expo";
-import { useVideoPlayer, VideoView } from "expo-video";
 
 import { BrandLockup } from "@/components/BrandLockup";
 
 export const IntroVideoScreen = ({ onFinish }: { onFinish: () => void }) => {
   const finishedRef = useRef(false);
-  const finish = () => {
+  const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
     onFinish();
-  };
-
-  const player = useVideoPlayer(require("../../assets/intro-video.mp4"), (instance) => {
-    instance.loop = false;
-    instance.muted = true;
-    instance.play();
-  });
-
-  useEventListener(player, "playToEnd", finish);
+  }, [onFinish]);
 
   useEffect(() => {
     const fallback = setTimeout(finish, 7000);
     return () => clearTimeout(fallback);
-  }, []);
+  }, [finish]);
 
   return (
     <View className="flex-1 bg-[#06131F]">
-      <VideoView
-        player={player}
-        style={{ flex: 1 }}
-        contentFit="cover"
-        nativeControls={false}
-        allowsFullscreen={false}
-      />
+      <View className="flex-1 items-center justify-center px-10">
+        <Image source={require("../../assets/icon.png")} className="h-40 w-40" resizeMode="contain" />
+      </View>
       <LinearGradient
         colors={["rgba(6,19,31,0.08)", "rgba(6,19,31,0.82)"]}
         className="absolute inset-0 justify-between px-8 pb-14 pt-20"

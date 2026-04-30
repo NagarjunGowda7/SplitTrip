@@ -1,9 +1,13 @@
-import * as XLSX from "xlsx";
+import { readSheet, Row } from "read-excel-file/universal";
 
 import { ItineraryItem } from "@/types/ItineraryItem";
-import { formatItineraryTime, getWeekdayLabel, toLocalDateInputValue } from "@/utils/dateHelpers";
+import {
+  formatItineraryTime,
+  getWeekdayLabel,
+  parseTimeToMinutes,
+  toLocalDateInputValue,
+} from "@/utils/dateHelpers";
 import { normalizeDateString } from "@/utils/validation";
-import { parseTimeToMinutes } from "@/utils/dateHelpers";
 
 type SpreadsheetRow = Record<string, unknown>;
 export interface ParsedItineraryRow {
@@ -14,14 +18,16 @@ export interface ParsedItineraryRow {
 
 const readString = (value: unknown) => (value == null ? "" : String(value).trim());
 
+const excelSerialToDate = (value: number) => new Date(Math.round((value - 25569) * 86400 * 1000));
+
 const formatImportedTime = (value: unknown) => {
   if (value instanceof Date) {
     return formatItineraryTime(`${value.getHours()}:${String(value.getMinutes()).padStart(2, "0")}`);
   }
 
   if (typeof value === "number") {
-    const converted = XLSX.SSF.parse_date_code(value);
-    return formatItineraryTime(`${converted.H}:${String(converted.M).padStart(2, "0")}`);
+    const date = excelSerialToDate(value);
+    return formatItineraryTime(`${date.getUTCHours()}:${String(date.getUTCMinutes()).padStart(2, "0")}`);
   }
 
   const raw = readString(value);
@@ -45,9 +51,20 @@ const monthLookup: Record<string, number> = {
 };
 
 const excelDateToIso = (value: unknown) => {
+  if (value instanceof Date) {
+    return toLocalDateInputValue(value);
+  }
+
   if (typeof value === "number") {
-    const converted = XLSX.SSF.parse_date_code(value);
-    const date = new Date(converted.y, converted.m - 1, converted.d, 12, 0, 0);
+    const converted = excelSerialToDate(value);
+    const date = new Date(
+      converted.getUTCFullYear(),
+      converted.getUTCMonth(),
+      converted.getUTCDate(),
+      12,
+      0,
+      0,
+    );
     return toLocalDateInputValue(date);
   }
 
@@ -138,18 +155,27 @@ const mapRowToItem = (
   };
 };
 
+const rowsToObjects = (rows: Row[]) => {
+  const [headerRow, ...dataRows] = rows;
+  const headers = (headerRow ?? []).map((cell) => readString(cell));
+
+  return dataRows.map((row) =>
+    headers.reduce<SpreadsheetRow>((record, header, index) => {
+      if (header) {
+        record[header] = row[index];
+      }
+      return record;
+    }, {}),
+  );
+};
+
 export const parseItineraryWorkbookDetailed = async (
   uri: string,
   tripId: string,
   tripStartDate?: string,
 ): Promise<ParsedItineraryRow[]> => {
-  const workbook = XLSX.read(await fetch(uri).then((response) => response.arrayBuffer()), {
-    type: "array",
-    cellDates: true,
-  });
-
-  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json<SpreadsheetRow>(firstSheet, { defval: "" });
+  const arrayBuffer = await fetch(uri).then((response) => response.arrayBuffer());
+  const rows = rowsToObjects(await readSheet(arrayBuffer));
   const baseYear = tripStartDate ? new Date(`${tripStartDate}T12:00:00`).getFullYear() : new Date().getFullYear();
   let rollingYear = baseYear;
   let previousMonthIndex: number | undefined;

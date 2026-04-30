@@ -17,6 +17,14 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID ?? extra.firebaseAppId,
 };
 
+const missingFirebaseConfig = Object.entries(firebaseConfig)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+if (missingFirebaseConfig.length) {
+  throw new Error(`Missing Firebase config values: ${missingFirebaseConfig.join(", ")}`);
+}
+
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const STORAGE_AVAILABLE_KEY = "__trip_ledger_auth_storage__";

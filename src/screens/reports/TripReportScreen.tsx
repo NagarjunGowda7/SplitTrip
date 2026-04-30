@@ -19,6 +19,7 @@ export const TripReportScreen = () => {
   const { expenses } = useExpenses(activeTrip?.id);
   const { items } = useItinerary(activeTrip?.id);
   const { summary } = useWallet(activeTrip?.id);
+  const [exporting, setExporting] = useState(false);
 
   if (!activeTrip) {
     return (
@@ -50,7 +51,6 @@ export const TripReportScreen = () => {
   }));
   const visitedStops = items.filter((item) => item.visited).length;
   const itineraryStops = items.length;
-  const [exporting, setExporting] = useState(false);
 
   const exportPdf = async () => {
     setExporting(true);

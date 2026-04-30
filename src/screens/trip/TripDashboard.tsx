@@ -1,8 +1,10 @@
 import NetInfo from "@react-native-community/netinfo";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { ScreenContainer } from "@/components/ScreenContainer";
@@ -21,7 +23,32 @@ import {
 import { simplifyDebts } from "@/utils/settlementEngine";
 import { buildMemberBalances, buildWalletInsights } from "@/utils/tripAnalytics";
 
-export const TripDashboard = ({ navigation }: any) => {
+type TripTabParamList = {
+  Dashboard: undefined;
+  Expenses: undefined;
+  AddExpense: undefined;
+  Wallet: undefined;
+  Itinerary: undefined;
+  Budget: undefined;
+  Packing: undefined;
+};
+
+type RootStackParamList = {
+  CreateTrip: { tripId?: string } | undefined;
+  Settlement: undefined;
+  TripReport: undefined;
+};
+
+type TripDashboardNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TripTabParamList, "Dashboard">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
+type TripDashboardProps = {
+  navigation: TripDashboardNavigationProp;
+};
+
+export const TripDashboard = ({ navigation }: TripDashboardProps) => {
   const { activeTrip, trips, isOwner } = useTrips();
   const { expenses, syncOffline } = useExpenses(activeTrip?.id);
   const { items } = useItinerary(activeTrip?.id);

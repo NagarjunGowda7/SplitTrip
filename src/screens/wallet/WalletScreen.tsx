@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
@@ -32,7 +32,7 @@ export const WalletScreen = ({ navigation }: any) => {
   const [error, setError] = useState<string>();
   const [success, setSuccess] = useState<string>();
 
-  const members = activeTrip?.members ?? [];
+  const members = useMemo(() => activeTrip?.members ?? [], [activeTrip?.members]);
   useEffect(() => {
     if (!selectedMemberIds.length && members.length) {
       setSelectedMemberIds([members[0].id]);

@@ -195,7 +195,7 @@ export const getCalendarDays = (monthDate: Date) => {
   const start = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
   const end = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
   const startWeekday = start.getDay();
-  const days: Array<{ key: string; value?: string; dayNumber?: number }> = [];
+  const days: { key: string; value?: string; dayNumber?: number }[] = [];
 
   for (let index = 0; index < startWeekday; index += 1) {
     days.push({ key: `empty-${index}` });

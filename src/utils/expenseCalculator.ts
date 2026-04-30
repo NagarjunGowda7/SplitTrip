@@ -35,7 +35,7 @@ export const calculateCustomSplit = (
 
 export const calculatePercentageSplit = (
   amount: number,
-  percentages: Array<{ memberId: string; percentage: number }>,
+  percentages: { memberId: string; percentage: number }[],
 ): ExpenseParticipantShare[] => {
   const totalPercentage = percentages.reduce((sum, item) => sum + item.percentage, 0);
   if (Number(totalPercentage.toFixed(2)) !== 100) {
