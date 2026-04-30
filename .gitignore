@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist-android-check/
+dist-android-check-2/
+dist-wev-check/
+.expo/
+
