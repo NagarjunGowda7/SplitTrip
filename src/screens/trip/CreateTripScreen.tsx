@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTrips } from "@/hooks/useTrips";
 import { TripMember } from "@/types/Trip";
 import { getTodayDateInput } from "@/utils/dateHelpers";
+import { isTripOwner } from "@/utils/tripPermissions";
 import { isNonNegativeNumber, isValidDateInput } from "@/utils/validation";
 
 const supportedCurrencies = ["INR", "USD", "EUR", "GBP", "AED"];
@@ -29,6 +30,7 @@ export const CreateTripScreen = ({ navigation, route }: any) => {
     () => trips.find((trip) => trip.id === route?.params?.tripId),
     [route?.params?.tripId, trips],
   );
+  const canEditTrip = !editingTrip || isTripOwner(editingTrip, user?.id);
 
   const [name, setName] = useState("");
   const [destination, setDestination] = useState("");
@@ -123,6 +125,11 @@ export const CreateTripScreen = ({ navigation, route }: any) => {
   };
 
   const handleSubmit = async () => {
+    if (!canEditTrip) {
+      setError("Only the trip creator can edit this trip.");
+      return;
+    }
+
     const nextError = validate();
     setError(nextError);
     setSuccess(undefined);
@@ -173,6 +180,9 @@ export const CreateTripScreen = ({ navigation, route }: any) => {
       <Text className="font-display text-3xl text-ink">
         {editingTrip ? "Edit Trip" : "Create a Trip"}
       </Text>
+      {!canEditTrip ? (
+        <FormMessage message="Only the trip creator can edit trip details and members." />
+      ) : null}
       <InputField label="Trip Name" value={name} onChangeText={setName} placeholder="Kerala Escape" />
       <InputField
         label="Destination"
@@ -254,7 +264,12 @@ export const CreateTripScreen = ({ navigation, route }: any) => {
       </View>
       <FormMessage message={error} />
       <FormMessage message={success} tone="success" />
-      <Button title={editingTrip ? "Update Trip" : "Save Trip"} onPress={handleSubmit} loading={saving} />
+      <Button
+        title={editingTrip ? "Update Trip" : "Save Trip"}
+        onPress={handleSubmit}
+        loading={saving}
+        disabled={!canEditTrip}
+      />
     </ScreenContainer>
   );
 };

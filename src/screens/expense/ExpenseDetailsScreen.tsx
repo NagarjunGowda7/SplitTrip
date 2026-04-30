@@ -16,7 +16,7 @@ import { useTrips } from "@/hooks/useTrips";
 import { isPositiveNumber, isValidDateInput } from "@/utils/validation";
 
 export const ExpenseDetailsScreen = ({ route, navigation }: any) => {
-  const { activeTrip } = useTrips();
+  const { activeTrip, isOwner } = useTrips();
   const { expenses, updateExpense, deleteExpense } = useExpenses(activeTrip?.id);
   const expense = expenses.find((item) => item.id === route.params?.expenseId) ?? expenses[0];
   const [title, setTitle] = useState("");
@@ -47,6 +47,11 @@ export const ExpenseDetailsScreen = ({ route, navigation }: any) => {
   }
 
   const handleUpdate = async () => {
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete expenses.");
+      return;
+    }
+
     if (!title.trim()) {
       setError("Title is required.");
       return;
@@ -84,6 +89,11 @@ export const ExpenseDetailsScreen = ({ route, navigation }: any) => {
   };
 
   const handleDelete = async () => {
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete expenses.");
+      return;
+    }
+
     setError(undefined);
     setSuccess(undefined);
     setSaving(true);
@@ -146,19 +156,30 @@ export const ExpenseDetailsScreen = ({ route, navigation }: any) => {
       <ReceiptPreview uri={expense.receiptUrl} />
       <FormMessage message={error} />
       <FormMessage message={success} tone="success" />
-      <Button title="Update Expense" onPress={handleUpdate} loading={saving} />
-      {confirmDelete ? (
-        <ConfirmationPanel
-          title="Delete Expense?"
-          description="This expense will be removed from totals and settlement calculations."
-          confirmLabel="Delete Expense"
-          onConfirm={handleDelete}
-          onCancel={() => setConfirmDelete(false)}
-          loading={saving}
-        />
-      ) : (
-        <Button title="Delete Expense" variant="danger" onPress={() => setConfirmDelete(true)} disabled={saving} />
-      )}
+      {!isOwner ? (
+        <Card>
+          <Text className="text-sm text-slate">
+            Only the trip creator can edit or delete this expense.
+          </Text>
+        </Card>
+      ) : null}
+      {isOwner ? (
+        <>
+          <Button title="Update Expense" onPress={handleUpdate} loading={saving} />
+          {confirmDelete ? (
+            <ConfirmationPanel
+              title="Delete Expense?"
+              description="This expense will be removed from totals and settlement calculations."
+              confirmLabel="Delete Expense"
+              onConfirm={handleDelete}
+              onCancel={() => setConfirmDelete(false)}
+              loading={saving}
+            />
+          ) : (
+            <Button title="Delete Expense" variant="danger" onPress={() => setConfirmDelete(true)} disabled={saving} />
+          )}
+        </>
+      ) : null}
     </ScreenContainer>
   );
 };

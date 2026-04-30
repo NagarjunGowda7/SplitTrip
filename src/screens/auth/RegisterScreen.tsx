@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/Button";
 import { FormMessage } from "@/components/FormMessage";
 import { InputField } from "@/components/InputField";
@@ -40,7 +41,7 @@ export const RegisterScreen = ({ navigation }: any) => {
     <ScreenContainer contentContainerStyle={{ padding: 24, flexGrow: 1, justifyContent: "center" }}>
       <View className="gap-8">
         <View>
-          <Text className="font-display text-4xl text-ink">Start Your Ledger</Text>
+          <BrandLockup />
           <Text className="mt-3 text-base text-slate">
             Build a shared trip workspace with planning, budgeting, receipts, and settlements.
           </Text>

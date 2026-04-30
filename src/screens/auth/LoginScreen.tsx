@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/Button";
 import { FormMessage } from "@/components/FormMessage";
 import { InputField } from "@/components/InputField";
@@ -35,7 +36,7 @@ export const LoginScreen = ({ navigation }: any) => {
     <ScreenContainer contentContainerStyle={{ padding: 24, justifyContent: "center", flexGrow: 1 }}>
       <View className="gap-8">
         <View>
-          <Text className="font-display text-4xl text-ink">SplitTrip</Text>
+          <BrandLockup />
           <Text className="mt-3 text-base leading-6 text-slate">
             Plan trips, track expenses, manage the group wallet, and settle up without friction.
           </Text>

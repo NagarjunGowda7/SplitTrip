@@ -25,7 +25,7 @@ const normalizePackingItems = (packingItems: unknown): PackingItem[] => {
       return {
         id: `packing-${index}`,
         title: item,
-        packed: false,
+        packedByIds: [],
       };
     }
 
@@ -33,7 +33,7 @@ const normalizePackingItems = (packingItems: unknown): PackingItem[] => {
     return {
       id: value.id ?? `packing-${index}`,
       title: value.title ?? "Untitled item",
-      packed: Boolean(value.packed),
+      packedByIds: Array.isArray(value.packedByIds) ? value.packedByIds.filter(Boolean) : [],
     };
   });
 };

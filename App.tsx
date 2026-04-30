@@ -3,9 +3,10 @@ import "./global.css";
 
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { IntroVideoScreen } from "@/components/IntroVideoScreen";
 import { AppNavigator } from "@/navigation/AppNavigator";
 import { useAuthStore } from "@/store/authStore";
 
@@ -23,6 +24,7 @@ const navigationTheme = {
 
 export default function App() {
   const bootstrap = useAuthStore((state) => state.bootstrap);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     bootstrap();
@@ -30,10 +32,17 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={navigationTheme}>
-        <StatusBar style="dark" />
-        <AppNavigator />
-      </NavigationContainer>
+      {showIntro ? (
+        <>
+          <StatusBar style="light" />
+          <IntroVideoScreen onFinish={() => setShowIntro(false)} />
+        </>
+      ) : (
+        <NavigationContainer theme={navigationTheme}>
+          <StatusBar style="dark" />
+          <AppNavigator />
+        </NavigationContainer>
+      )}
     </SafeAreaProvider>
   );
 }

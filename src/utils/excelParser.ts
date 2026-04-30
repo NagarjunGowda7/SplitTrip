@@ -25,10 +25,6 @@ const formatImportedTime = (value: unknown) => {
   }
 
   const raw = readString(value);
-  const parsedDate = new Date(raw);
-  if (!Number.isNaN(parsedDate.getTime()) && /(GMT|UTC|T\d{2}:\d{2}|^\w{3}\s\w{3}\s\d{2}\s\d{4})/.test(raw)) {
-    return formatItineraryTime(`${parsedDate.getHours()}:${String(parsedDate.getMinutes()).padStart(2, "0")}`);
-  }
 
   return formatItineraryTime(raw);
 };

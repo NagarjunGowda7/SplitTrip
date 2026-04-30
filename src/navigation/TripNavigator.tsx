@@ -2,6 +2,7 @@ import { Pressable } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
+import { BrandLockup } from "@/components/BrandLockup";
 import { appColors } from "@/constants/appColors";
 import { BudgetAnalyticsScreen } from "@/screens/budget/BudgetAnalyticsScreen";
 import { AddExpenseScreen } from "@/screens/expense/AddExpenseScreen";
@@ -25,6 +26,10 @@ export const TripNavigator = () => (
         fontWeight: "700",
       },
       headerShadowVisible: false,
+      headerTitle:
+        route.name === "Dashboard"
+          ? () => <BrandLockup compact showTagline={false} />
+          : undefined,
       headerRight: () => (
         <Pressable onPress={() => navigation.navigate("Settings" as never)} className="pr-1">
           <Ionicons name="person-circle-outline" size={26} color={appColors.secondary} />

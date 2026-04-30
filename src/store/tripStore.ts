@@ -10,6 +10,7 @@ interface TripState {
   setActiveTrip: (tripId: string) => void;
   createTrip: (trip: Omit<Trip, "id" | "createdAt" | "updatedAt">) => Promise<void>;
   updateTrip: (tripId: string, payload: Partial<Trip>) => Promise<void>;
+  updatePackingItems: (tripId: string, packingItems: Trip["packingItems"]) => Promise<void>;
   deleteTrip: (tripId: string) => Promise<void>;
 }
 
@@ -32,6 +33,9 @@ export const useTripStore = create<TripState>((set) => ({
   },
   updateTrip: async (tripId, payload) => {
     await tripService.updateTrip(tripId, payload);
+  },
+  updatePackingItems: async (tripId, packingItems) => {
+    await tripService.updateTrip(tripId, { packingItems });
   },
   deleteTrip: async (tripId) => {
     await tripService.deleteTrip(tripId);

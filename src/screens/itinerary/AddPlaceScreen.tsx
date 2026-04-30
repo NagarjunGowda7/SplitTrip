@@ -18,7 +18,7 @@ import {
 } from "@/utils/validation";
 
 export const AddPlaceScreen = ({ navigation, route }: any) => {
-  const { activeTrip } = useTrips();
+  const { activeTrip, isOwner } = useTrips();
   const { items, addItem, updateItem, deleteItem } = useItinerary(activeTrip?.id);
   const editingItem = items.find((item) => item.id === route?.params?.itemId);
   const [date, setDate] = useState(getTodayDateInput());
@@ -66,6 +66,11 @@ export const AddPlaceScreen = ({ navigation, route }: any) => {
   };
 
   const handleSave = async () => {
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete itinerary items.");
+      return;
+    }
+
     const nextError = validate();
     setError(nextError);
     if (nextError) return;
@@ -104,6 +109,10 @@ export const AddPlaceScreen = ({ navigation, route }: any) => {
 
   const handleDelete = async () => {
     if (!editingItem) return;
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete itinerary items.");
+      return;
+    }
     setSaving(true);
     try {
       await deleteItem(activeTrip.id, editingItem.id);
@@ -119,6 +128,9 @@ export const AddPlaceScreen = ({ navigation, route }: any) => {
       <Text className="font-display text-3xl text-ink">
         {editingItem ? "Edit Itinerary Item" : "Add Itinerary Item"}
       </Text>
+      {!isOwner ? (
+        <FormMessage message="Only the trip creator can edit or delete itinerary items." />
+      ) : null}
       <InputField
         label="Day"
         value={getWeekdayLabel(date)}
@@ -151,29 +163,37 @@ export const AddPlaceScreen = ({ navigation, route }: any) => {
       />
       <InputField label="Notes" value={notes} onChangeText={setNotes} placeholder="Optional notes" multiline />
       <FormMessage message={error} />
-      <Button
-        title={editingItem ? "Update Itinerary Item" : "Save Itinerary Item"}
-        loading={saving}
-        onPress={handleSave}
-      />
-      {editingItem ? (
-        confirmDelete ? (
-          <ConfirmationPanel
-            title="Delete Itinerary Item?"
-            description="This route stop will be removed from the trip plan."
-            confirmLabel="Delete Itinerary Item"
-            onConfirm={handleDelete}
-            onCancel={() => setConfirmDelete(false)}
-            loading={saving}
-          />
-        ) : (
+      {editingItem && isOwner ? (
+        <>
           <Button
-            title="Delete Itinerary Item"
-            variant="danger"
-            disabled={saving}
-            onPress={() => setConfirmDelete(true)}
+            title={editingItem ? "Update Itinerary Item" : "Save Itinerary Item"}
+            loading={saving}
+            onPress={handleSave}
           />
-        )
+          {confirmDelete ? (
+            <ConfirmationPanel
+              title="Delete Itinerary Item?"
+              description="This route stop will be removed from the trip plan."
+              confirmLabel="Delete Itinerary Item"
+              onConfirm={handleDelete}
+              onCancel={() => setConfirmDelete(false)}
+              loading={saving}
+            />
+          ) : (
+            <Button
+              title="Delete Itinerary Item"
+              variant="danger"
+              disabled={saving}
+              onPress={() => setConfirmDelete(true)}
+            />
+          )}
+        </>
+      ) : !editingItem && isOwner ? (
+        <Button
+          title="Save Itinerary Item"
+          loading={saving}
+          onPress={handleSave}
+        />
       ) : null}
     </ScreenContainer>
   );

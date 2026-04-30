@@ -9,13 +9,12 @@ import { FormMessage } from "@/components/FormMessage";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { useItinerary } from "@/hooks/useItinerary";
 import { useTrips } from "@/hooks/useTrips";
-import { itineraryService } from "@/services/firebase/itineraryService";
 import { compareItineraryOrder, formatItineraryTime } from "@/utils/dateHelpers";
 import { ParsedItineraryRow, parseItineraryWorkbookDetailed } from "@/utils/excelParser";
 
 export const ItineraryScreen = ({ navigation }: any) => {
-  const { activeTrip } = useTrips();
-  const { items, markVisited } = useItinerary(activeTrip?.id);
+  const { activeTrip, isOwner } = useTrips();
+  const { items, markVisited, addItem } = useItinerary(activeTrip?.id);
   const [statusMessage, setStatusMessage] = useState<string>();
   const [error, setError] = useState<string>();
   const [pendingImport, setPendingImport] = useState<ParsedItineraryRow[]>([]);
@@ -62,7 +61,7 @@ export const ItineraryScreen = ({ navigation }: any) => {
     try {
       for (const parsed of pendingImport) {
         const { id: _id, createdAt: _createdAt, ...payload } = parsed.item;
-        await itineraryService.addItem(payload);
+        await addItem(payload);
       }
       setStatusMessage(`${pendingImport.length} itinerary items imported.`);
       setPendingImport([]);
@@ -76,8 +75,18 @@ export const ItineraryScreen = ({ navigation }: any) => {
   return (
     <ScreenContainer contentContainerStyle={{ padding: 24, gap: 16 }}>
       <Text className="font-display text-3xl text-ink">Itinerary</Text>
-      <Button title="Add Itinerary Item" onPress={() => navigation.navigate("AddPlace")} />
-      <Button title="Import Excel" variant="secondary" onPress={handleImport} />
+      {isOwner ? (
+        <>
+          <Button title="Add Itinerary Item" onPress={() => navigation.navigate("AddPlace")} />
+          <Button title="Import Excel" variant="secondary" onPress={handleImport} />
+        </>
+      ) : (
+        <Card>
+          <Text className="text-sm text-slate">
+            Only the trip creator can edit, import, or mark itinerary items as visited.
+          </Text>
+        </Card>
+      )}
       <FormMessage message={error} />
       <FormMessage message={statusMessage} tone="success" />
       {pendingImport.length ? (
@@ -116,7 +125,11 @@ export const ItineraryScreen = ({ navigation }: any) => {
         </Card>
       ) : null}
       {groupedItems.length ? groupedItems.map((item) => (
-        <Pressable key={item.id} onPress={() => navigation.navigate("AddPlace", { itemId: item.id })}>
+        <Pressable
+          key={item.id}
+          disabled={!isOwner}
+          onPress={() => navigation.navigate("AddPlace", { itemId: item.id })}
+        >
           <Card>
             <View className="gap-3">
             <View className="flex-row items-center justify-between">
@@ -125,6 +138,7 @@ export const ItineraryScreen = ({ navigation }: any) => {
               </Text>
               <Switch
                 value={item.visited}
+                disabled={!isOwner}
                 onValueChange={(value) => markVisited(activeTrip.id, item.id, value)}
               />
             </View>

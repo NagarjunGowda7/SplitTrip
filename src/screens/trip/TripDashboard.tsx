@@ -12,12 +12,17 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useItinerary } from "@/hooks/useItinerary";
 import { useTrips } from "@/hooks/useTrips";
 import { useWallet } from "@/hooks/useWallet";
-import { compareItineraryOrder, formatItineraryTime, formatShortDate, getDateSortValue } from "@/utils/dateHelpers";
+import {
+  compareItineraryOrder,
+  formatItineraryTime,
+  formatShortDate,
+  getDateTimeSortValue,
+} from "@/utils/dateHelpers";
 import { simplifyDebts } from "@/utils/settlementEngine";
 import { buildMemberBalances, buildWalletInsights } from "@/utils/tripAnalytics";
 
 export const TripDashboard = ({ navigation }: any) => {
-  const { activeTrip, trips } = useTrips();
+  const { activeTrip, trips, isOwner } = useTrips();
   const { expenses, syncOffline } = useExpenses(activeTrip?.id);
   const { items } = useItinerary(activeTrip?.id);
   const { summary } = useWallet(activeTrip?.id);
@@ -56,6 +61,7 @@ export const TripDashboard = ({ navigation }: any) => {
     ...(activeTrip?.memories ?? []).map((memory) => ({
       id: memory.id,
       date: memory.date,
+      activityAt: memory.date,
       title: memory.title,
       subtitle: memory.description || memory.type,
       badge: memory.type,
@@ -65,19 +71,21 @@ export const TripDashboard = ({ navigation }: any) => {
       .map((item) => ({
         id: item.id,
         date: item.date,
+        activityAt: item.visitedAt ?? item.createdAt ?? item.date,
         title: `${item.routeFrom} to ${item.routeTo}`,
         subtitle: item.activity || item.notes || "Visited itinerary item added to memory timeline",
         badge: "Visited",
       })),
-    ...expenses.slice(0, 3).map((expense) => ({
+    ...expenses.map((expense) => ({
       id: expense.id,
       date: expense.expenseDate,
+      activityAt: expense.createdAt || expense.expenseDate,
       title: `${expense.title} | ${expense.currency} ${expense.amount.toFixed(2)}`,
       subtitle: `Paid by ${expense.payerName}`,
       badge: "Expense",
     })),
   ]
-    .sort((a, b) => getDateSortValue(b.date) - getDateSortValue(a.date))
+    .sort((a, b) => getDateTimeSortValue(b.activityAt) - getDateTimeSortValue(a.activityAt))
     .slice(0, 6);
 
   if (!activeTrip) {
@@ -99,7 +107,7 @@ export const TripDashboard = ({ navigation }: any) => {
     <ScreenContainer contentContainerStyle={{ padding: 20, gap: 16 }}>
       <TripHeader
         trip={activeTrip}
-        onEdit={() => navigation.navigate("CreateTrip", { tripId: activeTrip.id })}
+        onEdit={isOwner ? () => navigation.navigate("CreateTrip", { tripId: activeTrip.id }) : undefined}
       />
       <View className="flex-row gap-3">
         <View className="flex-1">
@@ -208,7 +216,7 @@ export const TripDashboard = ({ navigation }: any) => {
                 key={item.id}
                 title={item.title}
                 subtitle={item.subtitle}
-                date={formatShortDate(item.date)}
+                date={formatShortDate(item.activityAt)}
                 badge={item.badge}
               />
             ))

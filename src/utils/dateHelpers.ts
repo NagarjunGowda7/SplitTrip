@@ -42,6 +42,18 @@ export const parseValidDate = (value: string | Date) => {
 
 const padDatePart = (value: number) => String(value).padStart(2, "0");
 
+const extractLegacyClockTime = (value: string) => {
+  const legacyTimeMatch = value.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\b/);
+  if (!legacyTimeMatch) {
+    return null;
+  }
+
+  return {
+    hour: Number(legacyTimeMatch[1]),
+    minute: Number(legacyTimeMatch[2]),
+  };
+};
+
 const formatToTwelveHour = (hour24: number, minute: number) => {
   const safeHour = ((hour24 % 24) + 24) % 24;
   const suffix = safeHour >= 12 ? "PM" : "AM";
@@ -130,6 +142,13 @@ export const parseTimeToMinutes = (value: string) => {
     return Number(twentyFourHourMatch[1]) * 60 + Number(twentyFourHourMatch[2]);
   }
 
+  if (/(GMT|UTC|^\w{3}\s\w{3}\s\d{2}\s\d{4})/.test(trimmed)) {
+    const clock = extractLegacyClockTime(trimmed);
+    if (clock) {
+      return clock.hour * 60 + clock.minute;
+    }
+  }
+
   const parsedDate = parseValidDate(trimmed);
   if (parsedDate) {
     return parsedDate.getHours() * 60 + parsedDate.getMinutes();
@@ -152,6 +171,13 @@ export const formatItineraryTime = (value: string) => {
   const twentyFourHourMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (twentyFourHourMatch) {
     return formatToTwelveHour(Number(twentyFourHourMatch[1]), Number(twentyFourHourMatch[2]));
+  }
+
+  if (/(GMT|UTC|^\w{3}\s\w{3}\s\d{2}\s\d{4})/.test(trimmed)) {
+    const clock = extractLegacyClockTime(trimmed);
+    if (clock) {
+      return formatToTwelveHour(clock.hour, clock.minute);
+    }
   }
 
   const parsedDate = parseValidDate(trimmed);
@@ -226,3 +252,14 @@ export const compareItineraryOrder = (
 };
 
 export const getDateSortValue = (value: string) => parseValidDate(value)?.getTime() ?? 0;
+
+export const getDateTimeSortValue = (value: string) => {
+  if (!value) return 0;
+
+  const parsedTimestamp = Date.parse(value);
+  if (!Number.isNaN(parsedTimestamp)) {
+    return parsedTimestamp;
+  }
+
+  return getDateSortValue(value);
+};

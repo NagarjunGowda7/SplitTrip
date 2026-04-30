@@ -14,6 +14,7 @@ export interface ItineraryItem {
   notes?: string;
   mapsLink?: string;
   visited: boolean;
+  visitedAt?: string;
   sortOrder?: number;
   createdAt: string;
 }

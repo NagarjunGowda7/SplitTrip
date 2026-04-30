@@ -7,13 +7,13 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useTrips } from "@/hooks/useTrips";
 
 export const TripMembersScreen = ({ navigation }: any) => {
-  const { activeTrip } = useTrips();
+  const { activeTrip, isOwner } = useTrips();
   const { expenses } = useExpenses(activeTrip?.id);
 
   return (
     <ScrollView className="flex-1 bg-sand" contentContainerStyle={{ padding: 24, gap: 16 }}>
       <Text className="font-display text-3xl text-ink">Trip Members</Text>
-      {activeTrip ? (
+      {activeTrip && isOwner ? (
         <Button
           title="Edit Trip and Members"
           variant="secondary"

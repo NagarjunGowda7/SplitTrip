@@ -34,12 +34,16 @@ export const itineraryService = {
             ...item.data(),
             createdAt:
               item.data().createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+            visitedAt: item.data().visitedAt?.toDate?.()?.toISOString?.() ?? item.data().visitedAt,
           })) as ItineraryItem[]).sort(compareItineraryOrder),
       );
     });
   },
   async markVisited(tripId: string, itineraryId: string, visited: boolean) {
-    await updateDoc(doc(db, "trips", tripId, "itinerary", itineraryId), { visited });
+    await updateDoc(doc(db, "trips", tripId, "itinerary", itineraryId), {
+      visited,
+      visitedAt: visited ? serverTimestamp() : null,
+    });
   },
   async updateItem(tripId: string, itineraryId: string, payload: Partial<ItineraryItem>) {
     await updateDoc(doc(db, "trips", tripId, "itinerary", itineraryId), stripUndefined(payload));

@@ -29,7 +29,8 @@ export interface TripMemory {
 export interface PackingItem {
   id: string;
   title: string;
-  packed: boolean;
+  packed?: boolean;
+  packedByIds?: string[];
 }
 
 export interface Trip {

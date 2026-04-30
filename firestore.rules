@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isTripOwner() {
+      return isSignedIn() && resource.data.createdBy == request.auth.uid;
+    }
+
+    function isCreatingOwnTrip() {
+      return isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+    }
+
+    match /trips/{tripId} {
+      allow read: if isSignedIn();
+      allow create: if isCreatingOwnTrip();
+      allow update, delete: if isTripOwner();
+
+      match /expenses/{expenseId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isTripOwner();
+      }
+
+      match /wallet/{transactionId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isTripOwner();
+      }
+
+      match /itinerary/{itemId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isTripOwner();
+      }
+    }
+  }
+}

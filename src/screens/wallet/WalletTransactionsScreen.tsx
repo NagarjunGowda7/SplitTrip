@@ -16,7 +16,7 @@ import { isPositiveNumber, isValidDateInput } from "@/utils/validation";
 const walletTypes: WalletTransaction["type"][] = ["add", "spend", "refund"];
 
 export const WalletTransactionsScreen = () => {
-  const { activeTrip } = useTrips();
+  const { activeTrip, isOwner } = useTrips();
   const { transactions, updateTransaction, deleteTransaction } = useWallet(activeTrip?.id);
   const [editingId, setEditingId] = useState<string>();
   const [type, setType] = useState<WalletTransaction["type"]>("add");
@@ -51,6 +51,10 @@ export const WalletTransactionsScreen = () => {
 
   const handleUpdate = async () => {
     if (!editingTransaction) return;
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete wallet transactions.");
+      return;
+    }
     const nextError = validate();
     setError(nextError);
     if (nextError) return;
@@ -77,6 +81,10 @@ export const WalletTransactionsScreen = () => {
 
   const handleDelete = async () => {
     if (!editingTransaction) return;
+    if (!isOwner) {
+      setError("Only the trip creator can edit or delete wallet transactions.");
+      return;
+    }
     setSaving(true);
     try {
       await deleteTransaction(activeTrip.id, editingTransaction.id);
@@ -92,7 +100,14 @@ export const WalletTransactionsScreen = () => {
   return (
     <ScrollView className="flex-1 bg-sand" contentContainerStyle={{ padding: 24, gap: 12 }}>
       <Text className="font-display text-3xl text-ink">Wallet Transactions</Text>
-      {editingTransaction ? (
+      {!isOwner ? (
+        <View className="rounded-3xl border border-slate-200 bg-white p-4">
+          <Text className="text-sm text-slate">
+            Only the trip creator can edit or delete wallet transactions.
+          </Text>
+        </View>
+      ) : null}
+      {editingTransaction && isOwner ? (
         <View className="gap-4 rounded-3xl border border-slate-200 bg-white p-4">
           <Text className="text-lg font-semibold text-ink">Edit Transaction</Text>
           <View className="flex-row flex-wrap gap-2">
@@ -149,7 +164,7 @@ export const WalletTransactionsScreen = () => {
         </View>
       ) : null}
       {transactions.map((item) => (
-        <Pressable key={item.id} onPress={() => setEditingId(item.id)}>
+        <Pressable key={item.id} disabled={!isOwner} onPress={() => setEditingId(item.id)}>
           <ListItem
             title={`${item.memberName} | ${item.type.toUpperCase()}`}
             subtitle={item.note ?? item.transactionDate ?? item.createdAt}

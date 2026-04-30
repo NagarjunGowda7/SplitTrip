@@ -12,7 +12,7 @@ import { useTrips } from "@/hooks/useTrips";
 
 export const SettingsScreen = () => {
   const { logout, user } = useAuth();
-  const { activeTrip, deleteTrip } = useTrips();
+  const { activeTrip, deleteTrip, isOwner } = useTrips();
   const { syncing, syncOffline, offlineQueueCount } = useExpenses(activeTrip?.id);
   const [confirmTripDelete, setConfirmTripDelete] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
@@ -74,7 +74,7 @@ export const SettingsScreen = () => {
         </Text>
       </Card>
       <Button title={syncing ? "Syncing..." : "Sync Offline Expenses"} onPress={() => syncOffline()} disabled={syncing} />
-      {activeTrip ? (
+      {activeTrip && isOwner ? (
         confirmTripDelete ? (
           <ConfirmationPanel
             title="Delete Current Trip?"
@@ -87,6 +87,12 @@ export const SettingsScreen = () => {
         ) : (
           <Button title="Delete Current Trip" variant="danger" onPress={() => setConfirmTripDelete(true)} />
         )
+      ) : activeTrip ? (
+        <Card>
+          <Text className="text-sm text-slate">
+            Only the trip creator can delete this trip or change shared trip information.
+          </Text>
+        </Card>
       ) : null}
       {confirmSignOut ? (
         <ConfirmationPanel
